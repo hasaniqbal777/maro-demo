@@ -14,6 +14,10 @@ short_description: Multi-agent misinformation detection (EMNLP 2025 MARO)
 
 # MARO — Multi-Agent Misinformation Detection
 
+[![Open in Spaces](https://img.shields.io/badge/🤗_Hugging_Face-Open_in_Spaces-yellow)](https://huggingface.co/spaces/hasaniqbal777/maro-demo)
+
+**Live demo:** [huggingface.co/spaces/hasaniqbal777/maro-demo](https://huggingface.co/spaces/hasaniqbal777/maro-demo)
+
 Course-project replication of *[A Multi-Agent Framework with Automated Decision
 Rule Optimization for Cross-Domain Misinformation Detection](https://aclanthology.org/2025.emnlp-main.291.pdf)*
 (Hui Li et al., EMNLP 2025) — with a live **Streamlit agent-I/O inspector** and
