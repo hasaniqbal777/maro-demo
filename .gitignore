@@ -1,0 +1,25 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Secrets & local state
+.env
+
+# Datasets & run artefacts (too big / machine-specific for git; regenerate via scripts/)
+data/pheme/
+data/_pheme_tmp/
+data/results/
+data/rules.json
+data/last_trace.json
+data/pheme-rnr-dataset.tar.bz2
+data/PHEME_veracity.tar.bz2
+
+# pytest
+.pytest_cache/

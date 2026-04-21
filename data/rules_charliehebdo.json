@@ -1,0 +1,34 @@
+{
+  "top_k": [
+    "Based on the multi-dimensional analysis report, determine whether the news is misinformation. If the linguistic, comment, and fact-checking analyses collectively suggest the news is untrustworthy, output \"1\" (fake); if they suggest it is trustworthy, output \"0\" (real).\nOutput requirements: - Output format: judgment: <'1' represents fake-news, '0' represents real-news>",
+    "Based on the multi-dimensional analysis, judge the news as fake only when the overall evidence shows a clearly unsupported, contradicted, or deceptive claim; if the analyses indicate the core claim is supported, merely unverified, or a routine breaking-news alert with no contradiction, judge it real. Output requirements: - Output format: judgment: <'1' represents fake-news, '0' represents real-news>",
+    "Use the multi-dimensional analysis to judge the news as fake only when it contains a concrete factual claim that is either directly refuted by trusted evidence or relies on clearly fabricated/altered details; if the claim is merely vague, incomplete, emotional, speculative, or unverified, judge it real. When comments are mixed, give priority to fact-checking evidence over sentiment or stance. Output requirements: - Output format: judgment: <'1' represents fake-news, '0' represents real-news>"
+  ],
+  "trajectory": [
+    {
+      "rule": "Based on the multi-dimensional analysis report, determine whether the news is misinformation. If the linguistic, comment, and fact-checking analyses collectively suggest the news is untrustworthy, output \"1\" (fake); if they suggest it is trustworthy, output \"0\" (real).\nOutput requirements: - Output format: judgment: <'1' represents fake-news, '0' represents real-news>",
+      "accuracy": 0.4666666666666667
+    },
+    {
+      "rule": "Based on the multi-dimensional analysis, judge the news as fake only when the overall evidence shows a clearly unsupported, contradicted, or deceptive claim; if the analyses indicate the core claim is supported, merely unverified, or a routine breaking-news alert with no contradiction, judge it real. Output requirements: - Output format: judgment: <'1' represents fake-news, '0' represents real-news>",
+      "accuracy": 0.4666666666666667
+    },
+    {
+      "rule": "Based on the multi-dimensional analysis, judge the news as fake only if the core claim is directly contradicted by trusted evidence or the report shows clear fabrication, such as a non-existent event, wrong person/place, or a misleading claim that is later refuted; otherwise judge it real, including cases that are incomplete, speculative, or simply unverified. Output requirements: - Output format: judgment: <'1' represents fake-news, '0' represents real-news>",
+      "accuracy": 0.43333333333333335
+    },
+    {
+      "rule": "Use the multi-dimensional analysis to judge the news as fake only when it contains a concrete factual claim that is either directly refuted by trusted evidence or relies on clearly fabricated/altered details; if the claim is merely vague, incomplete, emotional, speculative, or unverified, judge it real. When comments are mixed, give priority to fact-checking evidence over sentiment or stance. Output requirements: - Output format: judgment: <'1' represents fake-news, '0' represents real-news>",
+      "accuracy": 0.4666666666666667
+    },
+    {
+      "rule": "Assess the multi-dimensional analysis as a whole: output fake only when the report identifies a specific factual claim and the evidence/comments show that claim is clearly false, contradicted, or fabricated; if the item is mainly a headline, alert, quote, or social post with no direct contradiction, or if the evidence is only incomplete/uncertain/mixed, judge it real. Priority order: direct factual contradiction > strong corroboration > ambiguity/unverified detail > sentiment or reaction. Output requirements: - Output format: judgment: <'1' represents fake-news, '0' represents real-news>",
+      "accuracy": 0.4666666666666667
+    },
+    {
+      "rule": "Treat the item as fake only when the multi-dimensional analysis gives a clear, evidence-backed contradiction or identifies a manufactured claim that cannot plausibly be true; if the claim is merely uncertain, incomplete, sensational, or supported by at least one credible source in the analysis, judge it real. Prioritize direct fact-checking evidence over language tone and comment sentiment, and when evidence is mixed or missing, default to real. Output requirements: - Output format: judgment: <'1' represents fake-news, '0' represents real-news>",
+      "accuracy": 0.43333333333333335
+    }
+  ],
+  "best_acc": 0.4666666666666667
+}
