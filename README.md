@@ -8,6 +8,7 @@ sdk_version: 1.56.0
 app_file: demo/app.py
 pinned: false
 license: mit
+python_version: "3.11"
 short_description: Multi-agent misinformation detection (EMNLP 2025 MARO)
 ---
 
@@ -140,19 +141,28 @@ phase) so a single hung call can't stall a batch.
 
 ## Running on HuggingFace Spaces
 
-This repo is configured as a Streamlit Space (see frontmatter). To deploy:
+This repo is configured as a Streamlit Space (see frontmatter) with an
+automated deploy via GitHub Actions on every push to `main`.
 
-1. Create a new Space, SDK = **Streamlit**.
-2. Push this repo to the Space's git remote.
-3. Under *Settings → Variables and secrets*, add two **secrets**:
-   `OPENAI_API_KEY` and `SERPER_API_KEY`.
-4. The Space builds from `requirements.txt` and launches `demo/app.py`.
+**One-time setup:**
 
-The `data/` directory (PHEME tweets, per-event rules files) is git-ignored;
-on a fresh Space deploy, users start in seed-rule mode. Either run the
-optimization locally and commit the `data/rules_*.json` files (they're small),
-or leave the deployment as a seed-rule demonstration of the multi-agent
-pipeline.
+1. Create a new Space on HuggingFace (SDK = **Streamlit**).
+2. In the Space's *Settings → Variables and secrets*, add two **Space secrets**:
+   - `OPENAI_API_KEY`
+   - `SERPER_API_KEY`
+3. In this GitHub repo's *Settings → Secrets and variables → Actions*, add
+   three **repository secrets**:
+   - `HF_TOKEN` — a HuggingFace access token with *write* scope
+     (profile → Access Tokens → New token → Write)
+   - `HF_USERNAME` — your HF username (owner of the Space)
+   - `HF_SPACE_NAME` — the Space's slug (without the username prefix)
+4. Push to `main`. The workflow at [.github/workflows/deploy-hf-space.yml](.github/workflows/deploy-hf-space.yml)
+   force-pushes the repo to the Space's git remote, the Space rebuilds from
+   `requirements.txt`, and `demo/app.py` launches.
+
+Per-event rule files `data/rules_<event>.json` are checked in, so the Space
+boots directly into MARO mode for any event whose optimization has been run
+locally. Events without a rules file fall back to the seed r₀ (warning banner).
 
 ## Scale knobs
 

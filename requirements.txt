@@ -158,10 +158,12 @@ tqdm==4.67.3
 typing-extensions==4.15.0
     # via
     #   altair
+    #   anyio
     #   beautifulsoup4
     #   openai
     #   pydantic
     #   pydantic-core
+    #   referencing
     #   streamlit
     #   typing-inspection
 typing-inspection==0.4.2

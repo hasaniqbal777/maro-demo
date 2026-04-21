@@ -1,0 +1,42 @@
+name: Deploy to Hugging Face Space
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Only one deploy at a time; cancel in-flight runs on new pushes.
+concurrency:
+  group: deploy-hf-space
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo (full history required for git push)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          lfs: true
+
+      - name: Configure git identity
+        run: |
+          git config --global user.email "deploy-bot@github-actions"
+          git config --global user.name "github-actions[deploy]"
+
+      - name: Push to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_USERNAME: ${{ secrets.HF_USERNAME }}
+          HF_SPACE_NAME: ${{ secrets.HF_SPACE_NAME }}
+        run: |
+          if [ -z "$HF_TOKEN" ] || [ -z "$HF_USERNAME" ] || [ -z "$HF_SPACE_NAME" ]; then
+            echo "::error::Missing one of the required secrets: HF_TOKEN, HF_USERNAME, HF_SPACE_NAME"
+            exit 1
+          fi
+          SPACE_URL="https://${HF_USERNAME}:${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${HF_SPACE_NAME}"
+          # Force-push is intentional: the Space's git remote is source-of-truth
+          # derived from this repo. Edits made through the Space UI will be
+          # overwritten — make UI-side changes (e.g. secrets) only in Settings.
+          git push --force "$SPACE_URL" main

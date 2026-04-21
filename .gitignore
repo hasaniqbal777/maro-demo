@@ -13,10 +13,11 @@ wheels/
 .env
 
 # Datasets & run artefacts (too big / machine-specific for git; regenerate via scripts/)
+# Note: data/rules_<event>.json files ARE tracked — they ship with the HF Space so
+# the demo boots in MARO mode for events whose optimization has been run.
 data/pheme/
 data/_pheme_tmp/
 data/results/
-data/rules.json
 data/last_trace.json
 data/pheme-rnr-dataset.tar.bz2
 data/PHEME_veracity.tar.bz2
