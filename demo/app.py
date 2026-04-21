@@ -138,8 +138,13 @@ st.markdown(
     "and revise. A Judge votes on whether the story is misinformation.**"
 )
 st.caption(
-    "Replication of EMNLP-2025 MARO, plus two course-project extensions: "
-    "evidence-source trust weighting and confidence / agent-disagreement analysis."
+    "Faithful replication of the EMNLP-2025 paper "
+    "**[“A Multi-Agent Framework with Automated Decision Rule Optimization for "
+    "Cross-Domain Misinformation Detection”](https://aclanthology.org/2025.emnlp-main.291/)** "
+    "by Hui Li, Ante Wang, Kunquan Li, Zhihao Wang, Liang Zhang, Delai Qiu, "
+    "Qingsong Liu, and Jinsong Su  —  with two course-project extensions "
+    "(evidence-source trust weighting + confidence / agent-disagreement analysis). "
+    "All credit for the MARO framework belongs to the original authors."
 )
 
 # Paper-faithful cross-event replication: per-target rules files live at
@@ -733,4 +738,45 @@ if go:
         f"{len(trace.calls)} LLM calls · "
         f"{tin:,} input / {tout:,} output tokens · "
         f"{total_latency / 1000:.1f}s total latency"
+    )
+
+
+# ------------------------------------------------------------------ Citation footer
+
+st.divider()
+st.caption(
+    "This is a **faithful replication** of MARO (Li et al., EMNLP 2025). All "
+    "credit for the framework — the multi-agent decomposition, the "
+    "question-reflection mechanism, and Algorithm 1 (decision-rule "
+    "optimization) — belongs to the original authors. "
+    "Paper: [aclanthology.org/2025.emnlp-main.291](https://aclanthology.org/2025.emnlp-main.291/)"
+)
+
+with st.expander("📚 Cite the original paper (BibTeX)", expanded=False):
+    st.code(
+        """@inproceedings{li-etal-2025-multi-agent,
+    title = "A Multi-Agent Framework with Automated Decision Rule Optimization for Cross-Domain Misinformation Detection",
+    author = "Li, Hui  and
+      Wang, Ante  and
+      Li, Kunquan  and
+      Wang, Zhihao  and
+      Zhang, Liang  and
+      Qiu, Delai  and
+      Liu, Qingsong  and
+      Su, Jinsong",
+    editor = "Christodoulopoulos, Christos  and
+      Chakraborty, Tanmoy  and
+      Rose, Carolyn  and
+      Peng, Violet",
+    booktitle = "Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing",
+    month = nov,
+    year = "2025",
+    address = "Suzhou, China",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2025.emnlp-main.291/",
+    doi = "10.18653/v1/2025.emnlp-main.291",
+    pages = "5709--5725",
+    ISBN = "979-8-89176-332-6",
+}""",
+        language="bibtex",
     )

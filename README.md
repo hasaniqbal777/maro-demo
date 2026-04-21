@@ -237,6 +237,43 @@ Figshare (~46 MB) and extracts the 5 events we use:
   "confirmed" items were later disputed — PHEME labels reflect the
   epistemic state at posting time, not hindsight.
 
+## Citation
+
+This project is a faithful replication of the following paper — all credit for
+the MARO framework, its agents, the decision-rule optimization algorithm, and
+the experimental protocol belongs to the original authors. If you use or
+extend this work, please cite the original paper:
+
+```bibtex
+@inproceedings{li-etal-2025-multi-agent,
+    title = "A Multi-Agent Framework with Automated Decision Rule Optimization for Cross-Domain Misinformation Detection",
+    author = "Li, Hui  and
+      Wang, Ante  and
+      Li, Kunquan  and
+      Wang, Zhihao  and
+      Zhang, Liang  and
+      Qiu, Delai  and
+      Liu, Qingsong  and
+      Su, Jinsong",
+    editor = "Christodoulopoulos, Christos  and
+      Chakraborty, Tanmoy  and
+      Rose, Carolyn  and
+      Peng, Violet",
+    booktitle = "Proceedings of the 2025 Conference on Empirical Methods in Natural Language Processing",
+    month = nov,
+    year = "2025",
+    address = "Suzhou, China",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/2025.emnlp-main.291/",
+    doi = "10.18653/v1/2025.emnlp-main.291",
+    pages = "5709--5725",
+    ISBN = "979-8-89176-332-6",
+}
+```
+
+**Paper:** [aclanthology.org/2025.emnlp-main.291](https://aclanthology.org/2025.emnlp-main.291/)  ·  **DOI:** [10.18653/v1/2025.emnlp-main.291](https://doi.org/10.18653/v1/2025.emnlp-main.291)
+
 ## License
 
-MIT.
+This replication code is released under the MIT license. The MARO framework
+itself is the intellectual contribution of the original paper's authors.
