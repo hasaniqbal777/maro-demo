@@ -27,13 +27,17 @@ def format_evidence(
     if wiki_hits:
         lines.append("## Wikipedia evidence")
         for w in wiki_hits:
-            tag = "[TRUSTED]" if use_trust_weighting else ""
-            lines.append(f"- {tag} {w.title} — {w.summary}  (source: {w.url})")
+            tag = "[TRUSTED · Wikipedia] " if use_trust_weighting else ""
+            lines.append(f"- {tag}{w.title} — {w.summary}  (source: {w.url})")
     if serper_hits:
         lines.append("\n## Web search evidence")
         for h in serper_hits:
-            tag = f"[{h.trust.upper()}]" if use_trust_weighting else ""
-            lines.append(f"- {tag} {h.title} — {h.snippet}  (source: {h.url})")
+            if use_trust_weighting:
+                note = f" · {h.trust_note}" if h.trust_note else ""
+                tag = f"[{h.trust.upper()}{note}] "
+            else:
+                tag = ""
+            lines.append(f"- {tag}{h.title} — {h.snippet}  (source: {h.url})")
     if not lines:
         return "(no evidence retrieved)"
     return "\n".join(lines)

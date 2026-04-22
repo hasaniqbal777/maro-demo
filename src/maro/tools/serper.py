@@ -10,7 +10,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 from ..config import SERPER_API_KEY
 from ..trace import ToolCall, current_trace
-from .trust import Tier, classify_source
+from .trust import Tier, classify
 
 SERPER_URL = "https://google.serper.dev/search"
 
@@ -21,6 +21,13 @@ class SearchHit:
     snippet: str
     url: str
     trust: Tier
+    trust_note: str = ""  # Iffy+/MBFC summary, or "Wikipedia" / "Social media …"
+    mbfc_fact: str = ""
+    mbfc_fact_label: str = ""
+    mbfc_bias: str = ""
+    mbfc_bias_label: str = ""
+    mbfc_cred: str = ""
+    mbfc_cred_label: str = ""
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
@@ -44,12 +51,20 @@ def search(query: str, num: int = 5) -> list[SearchHit]:
     hits: list[SearchHit] = []
     for item in data.get("organic", [])[:num]:
         url = item.get("link", "")
+        verdict = classify(url)
         hits.append(
             SearchHit(
                 title=item.get("title", ""),
                 snippet=item.get("snippet", ""),
                 url=url,
-                trust=classify_source(url),
+                trust=verdict.tier,
+                trust_note=verdict.note,
+                mbfc_fact=verdict.mbfc_fact,
+                mbfc_fact_label=verdict.mbfc_fact_label,
+                mbfc_bias=verdict.mbfc_bias,
+                mbfc_bias_label=verdict.mbfc_bias_label,
+                mbfc_cred=verdict.mbfc_cred,
+                mbfc_cred_label=verdict.mbfc_cred_label,
             )
         )
     latency_ms = (time.perf_counter() - t0) * 1000

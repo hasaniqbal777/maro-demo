@@ -39,22 +39,9 @@ TEMP_OPTIMIZER = 1.0
 TEMP_JUDGE = 0.0
 TEMP_ANALYSIS = 0.3  # expert agents — mild creativity, mostly deterministic
 
-# Trust-tier lookup for improvement #1 (evidence-source trust weighting).
-TRUSTED_DOMAINS: frozenset[str] = frozenset({
-    # Wire services
-    "reuters.com", "apnews.com", "afp.com",
-    # Mainstream newspapers
-    "nytimes.com", "washingtonpost.com", "wsj.com", "theguardian.com",
-    "bbc.com", "bbc.co.uk", "ft.com", "economist.com", "bloomberg.com",
-    "npr.org", "cnn.com", "abcnews.go.com", "nbcnews.com", "cbsnews.com",
-    # Science / health / gov
-    "nature.com", "science.org", "nejm.org", "thelancet.com",
-    "who.int", "cdc.gov", "nih.gov", "fda.gov", "europa.eu", "gov.uk",
-    # Reference
-    "wikipedia.org", "britannica.com",
-    # Fact-checking
-    "snopes.com", "factcheck.org", "politifact.com", "fullfact.org",
-})
+# Trust-tier classification is driven entirely by the Iffy+/MBFC data below.
+# The only domain we hardcode as trusted is Wikipedia (handled in trust.py).
+# Everything not in Iffy+ and not matching an untrusted pattern is NEUTRAL.
 
 # Any URL whose host contains one of these substrings is tagged "untrusted".
 UNTRUSTED_SUBSTRINGS: tuple[str, ...] = (
@@ -62,6 +49,68 @@ UNTRUSTED_SUBSTRINGS: tuple[str, ...] = (
     "twitter.com", "x.com", "facebook.com", "t.me", "tiktok.com",
     "reddit.com", "4chan.", "truthsocial.", "rumble.com",
 )
+
+# ---------------------------------------------------------------------------
+# Iffy+ Mis/Disinformation Index (Barrett Golding, MIT + CC BY 4.0).
+# https://iffy.news/index/ — refreshed via scripts/refresh_iffy_untrusted.py.
+# Each record carries the Media Bias/Fact Check (MBFC) abbreviations for
+# factual reporting, bias, and credibility, plus Iffy's composite score.
+# ---------------------------------------------------------------------------
+_IFFY_FILE = PROJECT_ROOT / "data" / "iffy_untrusted.json"
+
+# MBFC code → human-readable text. Sources:
+#   https://mediabiasfactcheck.com/methodology/
+#   https://iffy.news/index/ (legend)
+MBFC_FACT_MAP = {
+    "VH": "Very High Factual Reporting",
+    "H":  "High Factual Reporting",
+    "MF": "Mostly Factual",
+    "M":  "Mixed Factual",
+    "L":  "Low Factual",
+    "VL": "Very Low Factual",
+}
+MBFC_BIAS_MAP = {
+    "L":  "Left bias",
+    "LC": "Left-Center bias",
+    "C":  "Least biased",
+    "RC": "Right-Center bias",
+    "R":  "Right bias",
+    "PS": "Pro-Science",
+    "CP": "Conspiracy / Pseudoscience",
+    "QS": "Questionable Source",
+    "FN": "Fake News / Hate",
+    "SA": "Satire",
+}
+MBFC_CRED_MAP = {"H": "High Credibility", "M": "Medium Credibility", "L": "Low Credibility"}
+
+
+def _load_iffy() -> dict[str, dict]:
+    if not _IFFY_FILE.exists():
+        return {}
+    try:
+        import json
+        data = json.loads(_IFFY_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+    return data.get("domains", {})
+
+
+IFFY_DOMAINS: dict[str, dict] = _load_iffy()
+
+
+def format_mbfc(record: dict) -> str:
+    """Human-readable summary of the MBFC fields for an Iffy entry."""
+    parts: list[str] = []
+    if rec := MBFC_FACT_MAP.get((record.get("mbfc_fact") or "").upper()):
+        parts.append(rec)
+    if rec := MBFC_BIAS_MAP.get((record.get("mbfc_bias") or "").upper()):
+        parts.append(rec)
+    if rec := MBFC_CRED_MAP.get((record.get("mbfc_cred") or "").upper()):
+        parts.append(rec)
+    score = record.get("score")
+    if isinstance(score, (int, float)):
+        parts.append(f"Iffy score {score:.1f}")
+    return " · ".join(parts) if parts else "flagged by Iffy+ Index"
 
 PHEME_EVENTS: tuple[str, ...] = (
     "charliehebdo",

@@ -8,7 +8,7 @@ from __future__ import annotations
 import html
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
@@ -117,6 +117,33 @@ _CSS = """
 .maro-badge.neutral { background: #E5E7EB; color: #374151; }
 .maro-badge.untrusted { background: #FEE2E2; color: #991B1B; }
 
+/* MBFC label pills — one per dimension (Fact / Bias / Cred). Use severity colors. */
+.maro-mbfc {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 7px; border-radius: 999px;
+  font-size: 10.5px; font-weight: 600; letter-spacing: 0.2px;
+  margin-right: 5px; margin-top: 4px; color: #111827; background: #F3F4F6;
+  border: 1px solid #E5E7EB;
+}
+.maro-mbfc-key { font-weight: 700; color: #6B7280; font-size: 9.5px; letter-spacing: 0.5px; text-transform: uppercase; }
+/* Factual-reporting severity — green for high, red for very-low */
+.maro-mbfc.fact-VH, .maro-mbfc.fact-H  { background: #D1FAE5; border-color: #6EE7B7; color: #065F46; }
+.maro-mbfc.fact-MF                     { background: #ECFDF5; border-color: #A7F3D0; color: #047857; }
+.maro-mbfc.fact-M                      { background: #FEF3C7; border-color: #FDE68A; color: #92400E; }
+.maro-mbfc.fact-L                      { background: #FED7AA; border-color: #FDBA74; color: #9A3412; }
+.maro-mbfc.fact-VL                     { background: #FEE2E2; border-color: #FCA5A5; color: #991B1B; }
+/* Bias — red for fringe/fakenews/conspiracy, gray-blue for normal spectrum */
+.maro-mbfc.bias-L,  .maro-mbfc.bias-LC { background: #DBEAFE; border-color: #93C5FD; color: #1E3A8A; }
+.maro-mbfc.bias-C,  .maro-mbfc.bias-PS { background: #E5E7EB; border-color: #D1D5DB; color: #1F2937; }
+.maro-mbfc.bias-RC, .maro-mbfc.bias-R  { background: #FEE2E2; border-color: #FCA5A5; color: #7F1D1D; }
+.maro-mbfc.bias-QS                     { background: #FEF3C7; border-color: #FDE68A; color: #78350F; }
+.maro-mbfc.bias-CP, .maro-mbfc.bias-FN { background: #7F1D1D; border-color: #7F1D1D; color: #FEE2E2; }
+.maro-mbfc.bias-SA                     { background: #EDE9FE; border-color: #C4B5FD; color: #4C1D95; }
+/* Credibility severity */
+.maro-mbfc.cred-H                      { background: #D1FAE5; border-color: #6EE7B7; color: #065F46; }
+.maro-mbfc.cred-M                      { background: #FEF3C7; border-color: #FDE68A; color: #78350F; }
+.maro-mbfc.cred-L                      { background: #FEE2E2; border-color: #FCA5A5; color: #991B1B; }
+
 .maro-verdict-real { --bg1: #059669; --bg2: #10B981; }
 .maro-verdict-fake { --bg1: #DC2626; --bg2: #F97316; }
 .maro-verdict-unknown { --bg1: #6B7280; --bg2: #9CA3AF; }
@@ -127,6 +154,43 @@ _CSS = """
   background: rgba(255,255,255,0.22); letter-spacing: 0.3px;
 }
 .maro-truth.wrong { background: rgba(0,0,0,0.3); }
+
+.maro-ext-panel {
+  border: 1px dashed #D1D5DB; border-radius: 12px; padding: 14px 18px;
+  margin: 6px 0 18px 0; background: #FFFCF5;
+}
+.maro-ext-title {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.6px;
+  text-transform: uppercase; color: #9A7B1F; margin-bottom: 6px;
+}
+.maro-ext-sub { font-size: 12px; color: #6B7280; margin-bottom: 10px; }
+
+.maro-trust-bar {
+  display: flex; height: 22px; border-radius: 6px; overflow: hidden;
+  background: #F3F4F6; border: 1px solid #E5E7EB;
+}
+.maro-trust-bar > div {
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
+}
+.maro-trust-trusted   { background: #10B981; }
+.maro-trust-neutral   { background: #9CA3AF; }
+.maro-trust-untrusted { background: #EF4444; }
+.maro-trust-legend { font-size: 11px; color: #6B7280; margin-top: 6px; }
+
+.maro-vote-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.maro-vote-dot {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+  background: #F3F4F6; color: #374151;
+}
+.maro-vote-dot .swatch {
+  width: 10px; height: 10px; border-radius: 999px; background: #9CA3AF;
+}
+.maro-vote-dot.REAL    .swatch { background: #10B981; }
+.maro-vote-dot.FAKE    .swatch { background: #EF4444; }
+.maro-vote-dot.UNKNOWN .swatch { background: #9CA3AF; }
+.maro-vote-dot.judge { border: 1px solid #111827; background: #FAFAFA; font-weight: 700; }
 </style>
 """
 st.markdown(_CSS, unsafe_allow_html=True)
@@ -390,6 +454,121 @@ def _confidence_ring_custom(pct: float, label: str) -> str:
     """
 
 
+def _render_trust_bar(serper_hits, wiki_hits) -> str:
+    """Stacked horizontal bar + per-untrusted MBFC breakdown."""
+    trusted = sum(1 for h in serper_hits if h.trust == "trusted") + len(wiki_hits)
+    neutral = sum(1 for h in serper_hits if h.trust == "neutral")
+    untrusted_hits = [h for h in serper_hits if h.trust == "untrusted"]
+    untrusted = len(untrusted_hits)
+    total = trusted + neutral + untrusted
+    if total == 0:
+        return '<div class="maro-ext-sub">No external evidence retrieved yet.</div>'
+
+    pct_t = 100 * trusted / total
+    pct_n = 100 * neutral / total
+    pct_u = 100 * untrusted / total
+    segs: list[str] = []
+    if trusted:
+        segs.append(f'<div class="maro-trust-trusted" style="width:{pct_t:.1f}%">{trusted}</div>')
+    if neutral:
+        segs.append(f'<div class="maro-trust-neutral" style="width:{pct_n:.1f}%">{neutral}</div>')
+    if untrusted:
+        segs.append(f'<div class="maro-trust-untrusted" style="width:{pct_u:.1f}%">{untrusted}</div>')
+
+    # Per-untrusted MBFC breakdown — shows what made each untrusted hit untrusted.
+    breakdown_html = ""
+    if untrusted_hits:
+        rows: list[str] = []
+        from urllib.parse import urlparse
+        for h in untrusted_hits:
+            host = urlparse(h.url).netloc.lower().lstrip("www.")
+            pills: list[str] = []
+            fact_code = getattr(h, "mbfc_fact", "")
+            fact_label = getattr(h, "mbfc_fact_label", "")
+            bias_code = getattr(h, "mbfc_bias", "")
+            bias_label = getattr(h, "mbfc_bias_label", "")
+            cred_code = getattr(h, "mbfc_cred", "")
+            cred_label = getattr(h, "mbfc_cred_label", "")
+            if fact_code:
+                pills.append(
+                    f'<span class="maro-mbfc fact-{fact_code}"><span class="maro-mbfc-key">Fact</span> {html.escape(fact_label)}</span>'
+                )
+            if bias_code:
+                pills.append(
+                    f'<span class="maro-mbfc bias-{bias_code}"><span class="maro-mbfc-key">Bias</span> {html.escape(bias_label)}</span>'
+                )
+            if cred_code:
+                pills.append(
+                    f'<span class="maro-mbfc cred-{cred_code}"><span class="maro-mbfc-key">Cred</span> {html.escape(cred_label)}</span>'
+                )
+            if not pills:
+                # untrusted by pattern (social media), no Iffy data — still list the host
+                pills.append(
+                    '<span class="maro-mbfc" style="color:#6B7280">Social / free-blog host</span>'
+                )
+            rows.append(
+                f'<div style="margin-top:6px;font-size:11.5px">'
+                f'  <span style="color:#991B1B;font-weight:700">⚠️ {html.escape(host)}</span>&nbsp; {"".join(pills)}'
+                f'</div>'
+            )
+        breakdown_html = "".join(rows)
+
+    return (
+        f'<div class="maro-trust-bar">{"".join(segs)}</div>'
+        f'<div class="maro-trust-legend">'
+        f'🟢 {trusted} trusted &nbsp;·&nbsp; ⚪ {neutral} neutral &nbsp;·&nbsp; 🔴 {untrusted} untrusted'
+        f'</div>'
+        f'{breakdown_html}'
+    )
+
+
+def _render_vote_row(verdicts: Mapping[str, str], judge_verdict: str) -> str:
+    """Colored pills for each expert agent's implicit verdict + the Judge's final."""
+    pills: list[str] = []
+    for agent_key, v in verdicts.items():
+        info = AGENT_META.get(agent_key, {"icon": "•", "label": agent_key.title()})
+        pills.append(
+            f'<span class="maro-vote-dot {v}">'
+            f'  <span class="swatch"></span>{info["icon"]} {info["label"]}'
+            f'</span>'
+        )
+    pills.append(
+        f'<span class="maro-vote-dot judge {judge_verdict}">'
+        f'  <span class="swatch"></span>⚖️ Judge (majority)'
+        f'</span>'
+    )
+    return f'<div class="maro-vote-row">{"".join(pills)}</div>'
+
+
+def _mbfc_pills(hit) -> str:
+    """Three small colored pills showing MBFC Fact / Bias / Credibility for a hit."""
+    fact_code = getattr(hit, "mbfc_fact", "")
+    fact_label = getattr(hit, "mbfc_fact_label", "")
+    bias_code = getattr(hit, "mbfc_bias", "")
+    bias_label = getattr(hit, "mbfc_bias_label", "")
+    cred_code = getattr(hit, "mbfc_cred", "")
+    cred_label = getattr(hit, "mbfc_cred_label", "")
+    if not (fact_code or bias_code or cred_code):
+        return ""
+    parts: list[str] = []
+    if fact_code:
+        parts.append(
+            f'<span class="maro-mbfc fact-{fact_code}">'
+            f'<span class="maro-mbfc-key">Fact</span> {html.escape(fact_label or fact_code)}</span>'
+        )
+    if bias_code:
+        parts.append(
+            f'<span class="maro-mbfc bias-{bias_code}">'
+            f'<span class="maro-mbfc-key">Bias</span> {html.escape(bias_label or bias_code)}</span>'
+        )
+    if cred_code:
+        parts.append(
+            f'<span class="maro-mbfc cred-{cred_code}">'
+            f'<span class="maro-mbfc-key">Cred</span> {html.escape(cred_label or cred_code)}</span>'
+        )
+    return f'<div style="margin-top:6px">{"".join(parts)}</div>'
+
+
 def _render_evidence(container, report) -> None:
     if not report.serper_hits and not report.wiki_hits:
         container.info("No external evidence retrieved.")
@@ -407,12 +586,14 @@ def _render_evidence(container, report) -> None:
     for h in report.serper_hits:
         from urllib.parse import urlparse
         host = urlparse(h.url).netloc
+        mbfc_pills = _mbfc_pills(h)
         cards.append(
             f'<div class="maro-evidence-card">'
             f'<div><span class="maro-badge {h.trust}">{h.trust.upper()}</span>'
             f'<span class="title"><a href="{html.escape(h.url)}" target="_blank">{html.escape(h.title)}</a></span></div>'
             f'<div class="snippet">{html.escape(h.snippet)}</div>'
             f'<div class="host">{html.escape(host)}</div>'
+            f'{mbfc_pills}'
             f"</div>"
         )
     container.markdown("".join(cards), unsafe_allow_html=True)
@@ -490,6 +671,15 @@ if use_optimized_rules and selected_event is not None:
         rules = load_rules(rules_path)
         rules_src_label = f"{rules_path.name}  (optimized WITHOUT seeing {selected_event})"
 st.caption(f"📏 Decision rules: **{len(rules)}** · source: {rules_src_label}")
+
+with st.expander(f"📜 View the {len(rules)} decision rule(s) being applied", expanded=False):
+    st.caption(
+        "These are the exact rules the **Judge Agent** will apply to the news. "
+        "The final verdict is the majority vote across them."
+    )
+    for i, rule in enumerate(rules, start=1):
+        st.markdown(f"**Rule {i}**")
+        st.code(rule.strip())
 
 # When the dropdown selection changes, we have to explicitly overwrite the
 # text_area's session-state value — Streamlit ignores `value=` once a keyed
@@ -705,6 +895,31 @@ if go:
         n_rules=len(result.per_rule),
         truth_is_rumour=truth_is_rumour,
     )
+
+    # ------------------------------------------------------------- Extensions panel
+    st.markdown("#### 🔬 Course-project extensions — at a glance")
+    ext_left, ext_right = st.columns(2)
+    judge_verdict = "FAKE" if result.label == 1 else "REAL"
+    with ext_left:
+        st.markdown(
+            f'<div class="maro-ext-panel">'
+            f'  <div class="maro-ext-title">Extension #1 · Evidence trust weighting</div>'
+            f'  <div class="maro-ext-sub">Sources retrieved for the Fact-Check Agent, '
+            f'  tagged by credibility tier before the LLM sees them.</div>'
+            f'  {_render_trust_bar(report.serper_hits, report.wiki_hits)}'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
+    with ext_right:
+        st.markdown(
+            f'<div class="maro-ext-panel">'
+            f'  <div class="maro-ext-title">Extension #2 · Agent agreement</div>'
+            f'  <div class="maro-ext-sub">Each expert agent\'s implicit verdict; '
+            f'  the Judge\'s majority vote sits on the right.</div>'
+            f'  {_render_vote_row(report.implicit_verdicts(), judge_verdict)}'
+            f'</div>',
+            unsafe_allow_html=True,
+        )
 
     # ------------------------------------------------------------- Diagnostics
     st.markdown("### Diagnostics")

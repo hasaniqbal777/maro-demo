@@ -48,10 +48,17 @@ from Appendix G.4 (PHEME, 5 events):
 
 ## Two extensions (course-project additions)
 
-1. **Evidence-source trust weighting** — Google search hits are tagged
-   `TRUSTED` / `NEUTRAL` / `UNTRUSTED` (whitelist of Reuters, AP, BBC, major
-   newspapers, Wikipedia, etc.) before the Fact-Checking Agent sees them. This
-   targets the paper's own Limitation #2 (search-engine poisoning).
+1. **Evidence-source trust weighting** — every Google/Serper hit is tagged
+   `TRUSTED` (Wikipedia only) / `UNTRUSTED` (Iffy+ Index match or
+   social-media pattern) / `NEUTRAL` (everything else), with classification
+   driven entirely by externally-validated data — no hand-curated whitelist.
+   When a hit appears in the [Iffy+ Mis/Disinformation Index](https://iffy.news/index/)
+   the Fact-Checking Agent (and the demo UI) see all three MBFC labels as
+   separate fields: **Factual Reporting**, **Bias**, **Credibility**, plus
+   Iffy's composite score. This targets the paper's own Limitation #2
+   (search-engine poisoning) and lets the agent cite the specific reason a
+   source is being downweighted, e.g. *"MBFC rates infowars.com as Very Low
+   Factual, Conspiracy-Pseudoscience bias, Low Credibility."*
 2. **Confidence + agent-disagreement analysis** — the Judge's majority vote
    over the top-K rules produces a calibrated confidence score, and each
    expert agent emits an implicit verdict so inter-agent disagreement is
@@ -213,6 +220,15 @@ scripts/
 tests/               # 17 pytest tests (mocked LLM end-to-end)
 data/                # git-ignored: PHEME tree, rules_<event>.json, results/
 ```
+
+## Third-party data credits
+
+- **[Iffy+ Mis/Disinformation Index](https://iffy.news/index/)** (Barrett Golding) —
+  2,000+ low-credibility domains with MBFC Factual/Bias/Credibility ratings.
+  Released under MIT + CC BY 4.0; we redistribute a snapshot at
+  `data/iffy_untrusted.json` (refresh with `scripts/refresh_iffy_untrusted.py`).
+- **[Media Bias/Fact Check](https://mediabiasfactcheck.com/)** ratings are
+  surfaced via Iffy+ and exposed in the Fact-Checking Agent's evidence notes.
 
 ## Dataset
 
