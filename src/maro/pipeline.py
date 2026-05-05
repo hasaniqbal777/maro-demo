@@ -159,7 +159,7 @@ def analyze(
         wiki_hits: list[WikipediaHit] = []
         search_futures: list[tuple[str, object]] = []
         for q in fact_qs[:5]:
-            search_futures.append(("serper", _submit(pool, serper_search, q, num=3)))
+            search_futures.append(("serper", _submit(pool, serper_search, q, num=10)))
             search_futures.append(("wiki",   _submit(pool, wiki_lookup, q)))
         for kind, fut in search_futures:
             r = fut.result()

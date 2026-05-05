@@ -24,7 +24,48 @@ from maro.config import (
 from maro.agents.base import parse_key_findings
 from maro.optimization import load_rules
 from maro.pipeline import analyze, infer
+from maro.tools.serper import SearchHit
+from maro.tools.trust import classify
 from maro.trace import AgentCall, trace_context
+
+
+# Hardcoded sample hits from Iffy+-listed domains, used only when the
+# "Inject sample fringe sources" toggle is on. The classifier populates
+# real MBFC data from data/iffy_untrusted.json — no fake credibility data.
+def _demo_hit(title: str, snippet: str, url: str) -> SearchHit:
+    v = classify(url)
+    return SearchHit(
+        title=title,
+        snippet=snippet,
+        url=url,
+        trust=v.tier,
+        trust_note=v.note,
+        mbfc_fact=v.mbfc_fact,
+        mbfc_fact_label=v.mbfc_fact_label,
+        mbfc_bias=v.mbfc_bias,
+        mbfc_bias_label=v.mbfc_bias_label,
+        mbfc_cred=v.mbfc_cred,
+        mbfc_cred_label=v.mbfc_cred_label,
+    )
+
+
+DEMO_FRINGE_HITS = [
+    _demo_hit(
+        "Big Pharma Has Been Hiding the Natural Cancer Cure for Decades",
+        "Suppressed studies show vitamin B17 in apricot kernels selectively destroys tumor cells without harming healthy tissue.",
+        "https://www.naturalnews.com/example-laetrile-cancer-cure",
+    ),
+    _demo_hit(
+        "Insider: 5G Towers Linked to COVID Spread in Suppressed Research",
+        "Whistleblower documents reveal electromagnetic radiation from 5G infrastructure correlates with virus transmission patterns.",
+        "https://www.infowars.com/example-5g-covid-link",
+    ),
+    _demo_hit(
+        "Whistleblower Confirms Dominion Voting Machine Vote-Flipping",
+        "Leaked source code analysis exposes algorithmic ballot manipulation across multiple swing states during the 2020 election.",
+        "https://beforeitsnews.com/example-dominion-whistleblower",
+    ),
+]
 
 # ------------------------------------------------------------------ Page setup
 
@@ -633,6 +674,13 @@ with st.sidebar:
     use_reflection = st.toggle("Question-reflection", value=True)
     use_trust = st.toggle("Evidence trust weighting (improvement #1)", value=True)
     use_optimized_rules = st.toggle("Use optimized rules (if available)", value=True)
+    inject_demo_fringe = st.toggle(
+        "🧪 Inject sample fringe sources (for screenshot)",
+        value=False,
+        help="Adds three hard-coded hits from known Iffy+-listed domains "
+             "(naturalnews.com, infowars.com, beforeitsnews.com) so the MBFC "
+             "Fact/Bias/Cred pills are visible. For demo / screenshot use only.",
+    )
 
 # ------------------------------------------------------------------ Input row
 
@@ -843,6 +891,10 @@ if go:
                 use_trust_weighting=use_trust,
                 progress=progress,
             )
+            if inject_demo_fringe:
+                # Demo-only: ensure the MBFC pills are visible for screenshots
+                # by appending three Iffy+-listed example hits to the evidence.
+                report.serper_hits.extend(DEMO_FRINGE_HITS)
             state["judge"] = "running"
             _render_pipeline(pipeline_slot, state)
             slots["judge"]["card"].markdown(
